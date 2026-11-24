@@ -48,6 +48,18 @@ if (
   throw new Error(`entry violates the gate: ${TITLE.length} chars`);
 }
 
+// The gate counts characters; the tie-break counts bytes. This title is
+// pure ASCII (52 chars = 52 bytes), so both numbers agree — verify that
+// explicitly, so a future edit that slips in a multi-byte character fails
+// loudly here instead of shipping a title whose byte length differs from
+// its character length.
+const byteLen = Buffer.byteLength(TITLE, 'utf8');
+if (byteLen !== TITLE.length || byteLen > 60) {
+  throw new Error(
+    `entry byte length ${byteLen} != char length ${TITLE.length} or over 60`,
+  );
+}
+
 mkdirSync(out, { recursive: true });
 const target = join(out, 'entry.txt');
 writeFileSync(target, TITLE, 'utf8');
